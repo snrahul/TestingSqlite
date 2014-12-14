@@ -1,0 +1,26 @@
+Select * from Sqlite_master;
+/*
+	sqlite_master stores all table and views information
+*/
+
+pragma table_info(Sqlite_master);
+/*
+	the above command can be used for getting column information for tables and views
+*/
+
+pragma table_info(AvgSum)
+/*
+	the above command can be used for views also.
+*/
+
+
+Select name from sqlite_master where type = 'view'
+/*
+	the above command allows us to get the views in database
+*/
+
+
+Select name from sqlite_master where type = 'table'
+/*
+	the above command allows us to get the tables in database
+*/

@@ -1,0 +1,174 @@
+Select substr([DataCollection.Status:S], 1, pos-1) from (Select *,instr([DataCollection.Status:S], ';') As pos from L1)
+
+Select substr([DataCollection.Status:S], pos+1) from (Select [DataCollection.Status:S],instr([DataCollection.Status:S], ';') As pos from L1)
+
+SELECT x+1 FROM (select 1 as x) 
+
+Select 1
+
+WITH RECURSIVE
+  cnt(x) AS (
+     SELECT 1
+     UNION ALL
+     SELECT x+1 FROM cnt
+      LIMIT 1000000
+  )
+SELECT x FROM cnt;
+
+
+
+with recursive
+one(x) as (
+select 2
+union all
+select x+1 from one where x+1 < 1000
+),
+inc(x) as (
+select 1
+union all
+select x from one
+)
+select x from inc
+/*
+	this gives 999 records with numbers ranging from 1 - 999, an example of using recursive queries.
+*/
+
+
+Select x+1 from (Select 1 as x union all SELECT x+1 FROM (select 1 as x) ) union select 2
+/*
+	The following gives 2, 3 as it ignores the 2 which is added later as it is already present in the set.
+*/
+
+Select x+1 from (Select 1 as x union all SELECT x+1 FROM (select 1 as x) ) union all select 2
+/*
+	The following gives 2, 3, 2 as it adds the 2 which is added later.
+*/
+
+Select x+1 from (Select 1 as x union all SELECT x+1 FROM (select 1 as x) ) EXCEPT select 2
+/*
+	the above gives only 3 as 2 is present in both.
+*/
+
+Select x+1 from (Select 1 as x union all SELECT x+1 FROM (select 1 as x) ) INTERSECT select 2
+/*
+	the above gives only 2 as 2 is present in both.
+*/
+
+
+
+with recursive
+one(x) as (
+values('Rahul Surya')
+),
+inc(x) as (
+select x from one
+)
+select x from inc
+
+
+Select substr(p, pos1) from (Select x as p, instr(x, ';') as pos1 from (Select substr([DataCollection.Status:S], pos+1) as x from (Select [DataCollection.Status:S],instr([DataCollection.Status:S], ';') As pos from L1)))
+
+Select substr(p, pos1+1) from (Select x as p, instr(x, ';') as pos1 from (Select substr([DataCollection.Status:S], pos+1) as x from (Select [DataCollection.Status:S],instr([DataCollection.Status:S], ';') As pos from L1))) where substr(p, pos1+1) is not ''
+
+select [DataCollection.Status:S] from L1;
+
+with recursive 
+base(x) as (
+	select [datacollection.status:s] from l1
+)
+select x from base
+
+
+with recursive 
+base(x) as (
+	values('Rahul Surya')
+)
+select instr(x, ' ') from (select x from base)
+
+
+with recursive 
+base(x) as (
+	select [datacollection.status:s] from l1 where instr([datacollection.status:s], ';') = 1
+)
+select x from base
+
+
+select * from (Select '2' as x) where cast(x as Integer) = 2
+/*
+	using casting in Integer casting in sqlite
+*/
+
+select * from (Select 2 as x) where cast(x as text) = '2'
+/*
+	using casting as text in sqlite
+*/
+
+
+Select substr(x, instr(x, ' ')+1) from (Select 'Rahul Surya' as x)
+/*
+	using instr and substr in the same level
+*/
+
+Select [Datacollection.Status:S], substr([Datacollection.Status:S], instr([Datacollection.Status:S], ';')+1) from L1
+
+
+with recursive 
+base(x) as (
+	values('5;3;7;')
+
+Union all
+select substr(x, instr(x, ';')+1) from base where instr(x, ';') > 0
+
+)
+Select x from base where x != '' limit 500
+
+
+
+with recursive 
+base(x) as (
+	values('5;3;7;')
+
+Union all
+select substr(x, instr(x, ';')+1) from base where instr(x, ';') > 0
+
+)
+Select substr(x, 1, instr(x, ';')-1) from (Select x from base where x != '' limit 500)
+
+
+with recursive 
+base(x) as (
+	Select [DataCollection.Status:S] from L1
+Union all
+select substr(x, instr(x, ';')+1) from base where instr(x, ';') > 0
+
+)
+Select substr(x, 1, instr(x, ';')-1) from (Select x from base where x != '' )
+/*
+	The following splits the multi categorical question to single categories
+*/
+
+
+with recursive 
+base(x, y) as (
+	Select  [Respondent.Serial:L], [DataCollection.Status:S] from L1
+Union all
+select x ,substr(y, instr(y, ';')+1) from base where instr(y, ';') > 0
+
+)
+Select x , substr(y, 1, instr(y, ';')-1) from (Select x,y from base where y != '' ) where x = 10
+/*
+	The following creates an table on multi categorical question where each category is split into seperate record.
+*/
+
+
+with recursive 
+base(x, y) as (
+	Select  [:P4], [Slice:S] from L20
+Union all
+select x ,substr(y, instr(y, ';')+1) from base where instr(y, ';') > 0
+
+)
+Select Distinct x , Cast(substr(y, 1, instr(y, ';')-1) As Integer) as y from (Select x,y from base where y != '' ) where x = 1
+/*
+	The following splits the multi categorical question to single categories and casts it as Integer and removes the duplicates
+*/

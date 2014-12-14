@@ -1,0 +1,98 @@
+Create View temp1 As Select [Respondent.Serial:L] from L1 where [Respondent.Serial:L] < 100
+
+Select * from temp1
+
+drop view temp1
+
+Create View temp2 As Select [Respondent.Serial:L] from temp1 where [Respondent.Serial:L] < 50
+
+Select count(*) from temp1
+
+Select (Select count(*) from temp1) as A, (Select count(*) from temp2) as B
+
+Select (Select count(*) from temp1) as A, (Select * from temp2) as B /*
+in B column sqlite chooses the first record to match with A
+*/
+
+Select (Select * from temp1) as A, (Select * from temp2) as B /*
+first record of A with first record of B
+*/
+
+Select * from temp1, temp2
+/*
+	We get 660 records = 30 * 22
+*/
+
+Select * from temp1, temp2 where temp1.[Respondent.Serial:L] = temp2.[Respondent.Serial:L]
+/*
+	We get 22 records which match
+*/
+
+Select Avg([Respondent.Serial:L]) from temp1
+
+Select Avg([Respondent.Serial:L]), max([Respondent.Serial:L]) from temp1
+UNION ALL 
+Select Avg([Respondent.Serial:L]), max([Respondent.Serial:L]) from temp2
+/*
+This will provide the avg and max for both views as table for comparison.
+*/
+
+
+Select Avg(temp1.[Respondent.Serial:L])- Avg(temp2.[Respondent.Serial:L]) from temp1,temp2
+/*
+This provides the average of the Respondent.Serial from two different views.
+*/
+
+Select AvgSum.'Avg([Respondent.Serial:L])' from AvgSum
+/* 
+	This is used to remove the clashes with column name with sqlite syntax.
+*/
+
+Select 'AvgSum'.'Avg([Respondent.Serial:L])' from 'AvgSum'
+/*
+	The following is used to remove the clashes with column name and tablename with sqlite keywords and functions.
+*/
+
+drop view temp1; drop view temp2; drop view avgSum;
+
+Select [Respondent.Serial:L] as Respondent, Case [Screener2:C1] 
+When 450 then 'Male'
+Else 'Female' End as Gender
+from L1
+/*
+The above query uses Case for displaying data in meaningful fashion
+*/
+
+Create view profile1
+ as Select [Respondent.Serial:L] as Respondent, Case [Screener2:C1] 
+When 450 then 'Female'
+Else 'Male' End as Gender
+from L1
+/*
+Creating profile1 table
+*/
+
+Update profile1 Set Gender = 'Female' where Gender = 'Male'
+/*
+	This gives error as view tables cannot be changed
+*/
+
+drop view profile1;
+
+Select * from (Select Respondent from profile1) As A, (Select Respondent from profile1 where Respondent < 50) as B where A.Respondent = B.Respondent
+/*
+	the above sql statment allows us to use joins from two sql queries.
+*/
+
+drop view profile1;
+Create view profile1
+ as Select [Respondent.Serial:L] as Respondent, [Screener4:L]  as Age
+from L1
+/*
+Creating profile1 with respondent.serial and age
+*/
+
+Select Respondent, Respondent % 3 as rem, age from profile1
+
+Select Respondent, Respondent % 3 as rem, age from profile1 where Respondent % 3 = 1 and Age is not NULL
+
