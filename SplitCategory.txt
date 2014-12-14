@@ -172,3 +172,63 @@ Select Distinct x , Cast(substr(y, 1, instr(y, ';')-1) As Integer) as y from (Se
 /*
 	The following splits the multi categorical question to single categories and casts it as Integer and removes the duplicates
 */
+
+
+with recursive 
+base(a, b) as (
+	Select [DataCollection.Status:S], [:p0] from L1
+	Union all
+	select substr(a, instr(a, ';')+1), b from base where instr(a, ';') > 0
+)
+Select b , substr(a, 1, instr(a, ';')-1) from (Select a,b from base where a != '' ) where b = 10
+/*
+	The above query is modified so that it is easier for working on multi categorical questions which are in different tables/levels.
+*/
+
+
+with recursive 
+base(a, b,c) as (
+	Select [Y1_Dmmuy:S], [:p0], [:p1] from L13
+	Union all
+	select substr(a, instr(a, ';')+1), b, c from base where instr(a, ';') > 0
+)
+Select b, c , cast(substr(a, 1, instr(a, ';')-1) as long) as a from (Select a,b,c from base where a != '' ) where c = 1 and b = 2
+/*
+	The above query is used for 1-d Grid, the same can be applied for many level grids this makes searching the levels data easier.
+*/
+
+Drop View y1_dummy;
+
+Create View y1_dummy As 
+
+with recursive 
+base(a, b,c) as (
+	Select [Y1_Dmmuy:S], [:p0], [:p1] from L13
+	Union all
+	select substr(a, instr(a, ';')+1), b, c from base where instr(a, ';') > 0
+)
+Select b, c , cast(substr(a, 1, instr(a, ';')-1) as long) as a from (Select a,b,c from base where a != '' )
+/*
+	above creates an view for easier analysis etc.
+*/
+
+Drop view X1;
+Create view X1 As 
+with recursive 
+base(a, b,c) as (
+	Select [L2_Dummy:S], [:p0], [:p1] from L13
+	Union all
+	select substr(a, instr(a, ';')+1), b, c from base where instr(a, ';') > 0
+)
+Select b, c , cast(substr(a, 1, instr(a, ';')-1) as long) as a from (Select a,b,c from base where a != '' );
+Drop view X2;
+Create view X2 As
+with recursive 
+base(a, b,c) as (
+	Select [Y1_Dmmuy:S], [:p0], [:p1] from L13
+	Union all
+	select substr(a, instr(a, ';')+1), b, c from base where instr(a, ';') > 0
+)
+Select b, c , cast(substr(a, 1, instr(a, ';')-1) as long) as a from (Select a,b,c from base where a != '' );
+
+Select Distinct L1.[Respondent.Serial:L], L13. [L_Loop_Driver:C1]  from L1,X1, X2, L13 where X1.a = X2.a and X2.b = X2.b and X1.c = X2.c and X1.c = L1.[:p0] and X1.b = L13.[:p0] and X1.c = L13.[:p1] and X2.c = L13.[:p1]
